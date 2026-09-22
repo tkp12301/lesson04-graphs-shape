@@ -153,22 +153,35 @@ st.info("")
 st.divider()
 
 # ======================================================================
-# 5. 장르별 총 관객 수 분포 - 박스플롯
+# 5. 장르별 총 관객 수 분포 - 박스플롯 (10편 이상인 장르만)
 # ======================================================================
 st.header("5️⃣ 장르별 총 관객 수 분포")
 
+# 영화가 10편 이상인 장르만 선택
+genre_movie_counts = df["genre_main"].value_counts()
+valid_genres = genre_movie_counts[genre_movie_counts >= 10].index
+df_box = df[df["genre_main"].isin(valid_genres)]
+
 fig_box = px.box(
-    df,
+    df_box,
     x="genre_main",
     y="total_audi",
     color="genre_main",
-    points="all",
+    points="outliers",
     hover_name="movieNm",
+    log_y=True,
     labels={"genre_main": "장르", "total_audi": "총 관객 수"},
 )
-fig_box.update_layout(showlegend=False, xaxis_title="장르", yaxis_title="총 관객 수")
+fig_box.update_layout(
+    showlegend=False,
+    xaxis_title="장르",
+    yaxis_title="총 관객 수 (로그 스케일)",
+    height=600,
+)
 
 st.plotly_chart(fig_box, use_container_width=True)
+
+st.caption("※ 총 관객 수의 편차가 커서 y축을 로그 스케일로 표시했습니다.")
 
 st.markdown("**📌 이 그래프로 알 수 있는 것:**")
 st.info("")
