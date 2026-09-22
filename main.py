@@ -107,6 +107,20 @@ fig_hist.update_layout(yaxis_title="영화 편수", bargap=0.05)
 
 st.plotly_chart(fig_hist, use_container_width=True)
 
+# 대부분의 영화가 몰려 있는 구간 계산
+counts, bin_edges = np.histogram(df["total_audi"].dropna(), bins=30)
+peak_idx = counts.argmax()
+peak_low, peak_high = bin_edges[peak_idx], bin_edges[peak_idx + 1]
+
+# 총 관객 수가 가장 많은 영화 계산
+top_movie = df.loc[df["total_audi"].idxmax()]
+
+st.markdown(
+    f"👉 대부분의 영화는 총 관객 수 **{peak_low:,.0f}명 ~ {peak_high:,.0f}명** 구간에 가장 많이 몰려 있고, "
+    f"총 관객이 가장 많은 영화는 **{top_movie['movieNm']}**"
+    f"(약 {top_movie['total_audi']:,.0f}명)입니다."
+)
+
 st.markdown("**📌 이 그래프로 알 수 있는 것:**")
 st.info("")
 
