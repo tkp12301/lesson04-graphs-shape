@@ -185,3 +185,32 @@ st.caption("※ 총 관객 수의 편차가 커서 y축을 로그 스케일로 �
 
 st.markdown("**📌 이 그래프로 알 수 있는 것:**")
 st.info("")
+
+st.divider()
+
+# ======================================================================
+# 6. 개봉일 스크린수 vs 총 관객 수 - 버블 그래프 (크기 = 첫 주 관객)
+# ======================================================================
+st.header("6️⃣ 개봉일 스크린수 vs 총 관객 수 (버블 크기 = 첫 주 관객)")
+
+fig_bubble = px.scatter(
+    df,
+    x="first_scrn",
+    y="total_audi",
+    size="first_week_audi",
+    color="genre_main",
+    hover_name="movieNm",
+    size_max=50,
+    labels={
+        "first_scrn": "개봉일 스크린수",
+        "total_audi": "총 관객 수",
+        "genre_main": "장르",
+        "first_week_audi": "첫 주 관객",
+    },
+)
+fig_bubble.update_layout(legend_title_text="장르", height=600)
+
+st.plotly_chart(fig_bubble, use_container_width=True)
+
+st.markdown("**📌 이 그래프로 알 수 있는 것:**")
+st.info("")
