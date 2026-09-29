@@ -80,3 +80,34 @@ with st.container(border=True):
     takeaway_box("takeaway_genre")
 
 st.divider()
+
+# ── 구역 8: 10위권 머문 날수와 총 관객 (산점도) ─────────────────────
+st.header("8. 10위권에 오래 머문 영화는 총 관객도 많은가?")
+
+with st.container(border=True):
+    scatter_df = df.dropna(subset=["days_in_top10", "total_audi"])
+
+    fig8 = go.Figure(
+        go.Scatter(
+            x=scatter_df["days_in_top10"],
+            y=scatter_df["total_audi"],
+            mode="markers",
+            marker=dict(size=9, opacity=0.7),
+            customdata=scatter_df["movieNm"],
+            hovertemplate=(
+                "<b>%{customdata}</b><br>"
+                "10위권 머문 날수: %{x}일<br>"
+                "총 관객: %{y:,}명<extra></extra>"
+            ),
+        )
+    )
+    fig8.update_layout(
+        xaxis_title="10위권에 머문 날수 (일)",
+        yaxis_title="총 관객 (명)",
+        margin=dict(t=20, b=20, l=20, r=20),
+    )
+    st.plotly_chart(fig8, use_container_width=True)
+
+    takeaway_box("takeaway_scatter")
+
+st.divider()
