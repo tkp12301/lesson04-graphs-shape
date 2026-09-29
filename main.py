@@ -1,4 +1,6 @@
+import numpy as np
 import pandas as pd
+import plotly.express as px
 import plotly.graph_objects as go
 import streamlit as st
 
@@ -78,6 +80,106 @@ with st.container(border=True):
     st.plotly_chart(fig, use_container_width=True)
 
     takeaway_box("takeaway_genre")
+
+st.divider()
+
+# ── 구역 2: 장르 안의 영화 (트리맵) ────────────────────────────────
+st.header("2. 장르 안의 영화들 - 총 관객 트리맵")
+
+with st.container(border=True):
+    tree_df = (
+        df.dropna(subset=["total_audi"])
+        .query("total_audi > 0")
+        .groupby(["genre", "movieNm"], as_index=False)["total_audi"]
+        .sum()
+    )
+
+    fig2 = px.treemap(
+        tree_df,
+        path=[px.Constant("전체"), "genre", "movieNm"],
+        values="total_audi",
+    )
+    fig2.update_traces(
+        hovertemplate="<b>%{label}</b><br>총 관객: %{value:,}명<extra></extra>",
+        textinfo="label",
+    )
+    fig2.update_layout(margin=dict(t=20, b=20, l=20, r=20))
+    st.plotly_chart(fig2, use_container_width=True)
+
+    takeaway_box("takeaway_treemap")
+
+st.divider()
+
+# ── 구역 3: 총 관객 히스토그램 ─────────────────────────────────────
+st.header("3. 총 관객 분포 - 히스토그램")
+
+with st.container(border=True):
+    audi_df = df.dropna(subset=["total_audi"])
+    audi = audi_df["total_audi"]
+
+    counts, edges = np.histogram(audi, bins=20)
+    fig3 = go.Figure(
+        go.Histogram(
+            x=audi,
+            xbins=dict(start=edges[0], end=edges[-1], size=edges[1] - edges[0]),
+            hovertemplate="총 관객: %{x:,}명 부근<br>영화: %{y}편<extra></extra>",
+        )
+    )
+    fig3.update_layout(
+        xaxis_title="총 관객 (명)",
+        yaxis_title="영화 편수 (편)",
+        bargap=0.05,
+        margin=dict(t=20, b=20, l=20, r=20),
+    )
+    st.plotly_chart(fig3, use_container_width=True)
+
+    # 가장 많은 영화가 몰려 있는 구간
+    i = int(counts.argmax())
+    lo, hi = edges[i], edges[i + 1]
+    share = counts[i] / counts.sum() * 100
+    # 가장 관객이 많은 영화
+    top = audi_df.loc[audi.idxmax()]
+
+    st.markdown(
+        f"- **가장 많이 몰린 구간**: 총 관객 **{lo:,.0f}명 ~ {hi:,.0f}명** "
+        f"({counts[i]}편, 전체의 {share:.1f}%)\n"
+        f"- **관객이 가장 많은 영화**: **{top['movieNm']}** ({top['total_audi']:,.0f}명)"
+    )
+
+    takeaway_box("takeaway_hist")
+
+st.divider()
+
+# ── 구역 4: 개봉일 스크린수와 총 관객 (산점도, 장르별 색) ────────────
+st.header("4. 개봉일 스크린수와 총 관객 - 산점도")
+
+with st.container(border=True):
+    scrn_df = df.dropna(subset=["first_scrn", "total_audi"])
+
+    fig4 = px.scatter(
+        scrn_df,
+        x="first_scrn",
+        y="total_audi",
+        color="genre",
+        hover_name="movieNm",
+        labels={
+            "first_scrn": "개봉일 스크린수 (개)",
+            "total_audi": "총 관객 (명)",
+            "genre": "장르",
+        },
+    )
+    fig4.update_traces(
+        marker=dict(size=9, opacity=0.75),
+        hovertemplate=(
+            "<b>%{hovertext}</b><br>"
+            "개봉일 스크린수: %{x:,}개<br>"
+            "총 관객: %{y:,}명<extra>%{fullData.name}</extra>"
+        ),
+    )
+    fig4.update_layout(margin=dict(t=20, b=20, l=20, r=20))
+    st.plotly_chart(fig4, use_container_width=True)
+
+    takeaway_box("takeaway_scrn")
 
 st.divider()
 
